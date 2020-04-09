@@ -1,8 +1,20 @@
 import 'package:daily_task/config/config.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+
+  final TextEditingController _passwordController = TextEditingController();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -45,6 +57,7 @@ class LoginScreen extends StatelessWidget {
               padding: EdgeInsets.all(10.0),
               margin: EdgeInsets.only(top: 30.0),
               child: TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Email",
@@ -59,6 +72,7 @@ class LoginScreen extends StatelessWidget {
               padding: EdgeInsets.all(10.0),
               margin: EdgeInsets.only(top: 10.0),
               child: TextField(
+                controller: _passwordController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Password",
@@ -69,7 +83,9 @@ class LoginScreen extends StatelessWidget {
             ),
 
             InkWell(
-              onTap: () {},
+              onTap: () {
+                _signin();
+              },
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -96,9 +112,9 @@ class LoginScreen extends StatelessWidget {
               child: Text("Sign Up with email"),
               onPressed: () {},
             ),
-            
+
             Container(
-              margin: EdgeInsets.only(top:10.0),
+              margin: EdgeInsets.only(top: 10.0),
               child: Wrap(
                 children: <Widget>[
                   FlatButton.icon(
@@ -106,12 +122,22 @@ class LoginScreen extends StatelessWidget {
                     icon: Icon(
                       FontAwesomeIcons.google,
                     ),
-                    label: Text("Sign-in using Gmail", style: TextStyle(fontSize: 13,),),
+                    label: Text(
+                      "Sign-in using Gmail",
+                      style: TextStyle(
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                   FlatButton.icon(
                     onPressed: () {},
                     icon: Icon(Icons.phone),
-                    label: Text("Sign-in using Phone", style: TextStyle(fontSize: 13,),),
+                    label: Text(
+                      "Sign-in using Phone",
+                      style: TextStyle(
+                        fontSize: 13,
+                      ),
+                    ),
                   )
                 ],
               ),
@@ -120,5 +146,94 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _signin() async {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text;
+
+    if (email.isNotEmpty && password.isNotEmpty) {
+      await _auth
+          .signInWithEmailAndPassword(email: email, password: password)
+          .then((user) {
+        showDialog(
+            context: context,
+            builder: (ctx) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                title: Text("Logged In"),
+                content: Text(
+                  "Sign-in Success",
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Ok"),
+                    onPressed: () {
+                      _emailController.text = "";
+                      _passwordController.text = "";
+                      Navigator.of(ctx).pop();
+                    },
+                  )
+                ],
+              );
+            });
+      }).catchError((e) {
+        showDialog(
+            context: context,
+            builder: (ctx) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                title: Text("Error"),
+                content: Text(
+                  "${e.message}",
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Ok"),
+                    onPressed: () {
+                      _emailController.text = "";
+                      _passwordController.text = "";
+                      Navigator.of(ctx).pop();
+                    },
+                  )
+                ],
+              );
+            });
+      });
+    } else {
+      showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              title: Text("Error"),
+              content: Text(
+                "Please provide email and password...",
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("Cancel"),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+                FlatButton(
+                  child: Text("Ok"),
+                  onPressed: () {
+                    _emailController.text = "";
+                    _passwordController.text = "";
+                    Navigator.of(ctx).pop();
+                  },
+                )
+              ],
+            );
+          });
+    }
   }
 }

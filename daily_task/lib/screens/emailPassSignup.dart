@@ -1,3 +1,5 @@
+import 'package:daily_task/config/config.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class EmailPassSignupScreen extends StatefulWidget {
@@ -6,6 +8,10 @@ class EmailPassSignupScreen extends StatefulWidget {
 }
 
 class _EmailPassSignupScreenState extends State<EmailPassSignupScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passController = TextEditingController();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,11 +23,101 @@ class _EmailPassSignupScreenState extends State<EmailPassSignupScreen> {
           width: MediaQuery.of(context).size.width,
           child: Column(
             children: <Widget>[
-              
+              //Email text Field
+              Container(
+                padding: EdgeInsets.all(10.0),
+                margin: EdgeInsets.only(top: 30.0),
+                child: TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Email",
+                    hintText: "Enter your email here",
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              ),
+
+              //Password Input Field
+              Container(
+                padding: EdgeInsets.all(10.0),
+                margin: EdgeInsets.only(top: 10.0),
+                child: TextField(
+                  controller: _passController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Password",
+                    hintText: "Enter your password here",
+                  ),
+                  obscureText: true,
+                ),
+              ),
+
+              InkWell(
+                onTap: () {
+                  _signup();
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        primaryColor,
+                        secondaryColor,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  width: MediaQuery.of(context).size.width,
+                  margin: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                  child: Center(
+                      child: Text(
+                    "Signup using email",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  )),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _signup() {
+    String email = _emailController.text.trim();
+    String password = _passController.text;
+
+    if (email.isNotEmpty && password.isNotEmpty) {
+      _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } else {
+      showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              title: Text("Error.."),
+              content: Text(
+                "Please provide Email & Password",
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("Ok"),
+                  onPressed: () {
+                    _emailController.text = "";
+                    _passController.text = "";
+                    Navigator.of(ctx).pop();
+                  },
+                )
+              ],
+            );
+          });
+    }
   }
 }

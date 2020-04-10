@@ -1,4 +1,5 @@
 import 'package:daily_task/config/config.dart';
+import 'package:daily_task/screens/emailPassSignup.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -110,11 +111,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
             FlatButton(
               child: Text("Sign Up with email"),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EmailPassSignupScreen(),
+                  ),
+                );
+              },
             ),
 
             Container(
-              margin: EdgeInsets.only(top: 10.0),
+              margin: EdgeInsets.only(
+                top: 10.0,
+              ),
               child: Wrap(
                 children: <Widget>[
                   FlatButton.icon(

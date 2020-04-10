@@ -1,3 +1,4 @@
+import 'package:daily_task/config/config.dart';
 import 'package:daily_task/screens/loginScreen.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,14 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: HomePage(),
+      theme: ThemeData(
+        primaryColor: primaryColor,
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: primaryColor,
+      ),
     );
   }
 }

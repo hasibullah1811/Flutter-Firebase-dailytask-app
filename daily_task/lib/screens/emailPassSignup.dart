@@ -85,15 +85,65 @@ class _EmailPassSignupScreenState extends State<EmailPassSignupScreen> {
     );
   }
 
-  void _signup() {
-    String email = _emailController.text.trim();
+  void _signup() async{
+    String email = _emailController.text.toString().trim();
     String password = _passController.text;
 
     if (email.isNotEmpty && password.isNotEmpty) {
-      _auth.createUserWithEmailAndPassword(
+      await _auth
+          .createUserWithEmailAndPassword(
         email: email,
         password: password,
-      );
+      )
+          .then((user) {
+        showDialog(
+            context: context,
+            builder: (ctx) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                title: Text("Success Sign Up"),
+                content: Text(
+                  "Your account has been created successfully",
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Done"),
+                    onPressed: () {
+                      _emailController.text = "";
+                      _passController.text = "";
+                      Navigator.of(context).pop();
+                    },
+                  )
+                ],
+              );
+            });
+      }).catchError((e) {
+        showDialog(
+            context: context,
+            builder: (ctx) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                title: Text("Error"),
+                content: Text(
+                  "${e.message}",
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Okay"),
+                    onPressed: () {
+                      _emailController.text = "";
+                      _passController.text = "";
+                      Navigator.of(ctx).pop();
+                    },
+                  )
+                ],
+              );
+            });
+      });
     } else {
       showDialog(
           context: context,

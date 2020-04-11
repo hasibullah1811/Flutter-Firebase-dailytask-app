@@ -1,8 +1,10 @@
 import 'package:daily_task/config/config.dart';
 import 'package:daily_task/screens/emailPassSignup.dart';
+import 'package:daily_task/screens/phoneSignInScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
 
   final TextEditingController _passwordController = TextEditingController();
-
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -128,7 +130,9 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Wrap(
                 children: <Widget>[
                   FlatButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                  _signInUsingGoogle();
+                    },
                     icon: Icon(
                       FontAwesomeIcons.google,
                     ),
@@ -140,7 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   FlatButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneSignInScreen(),),);
+                    },
                     icon: Icon(Icons.phone),
                     label: Text(
                       "Sign-in using Phone",
@@ -233,6 +239,45 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.of(ctx).pop();
                   },
                 ),
+                FlatButton(
+                  child: Text("Ok"),
+                  onPressed: () {
+                    _emailController.text = "";
+                    _passwordController.text = "";
+                    Navigator.of(ctx).pop();
+                  },
+                )
+              ],
+            );
+          });
+    }
+  }
+
+  void _signInUsingGoogle() async {
+    try {
+      final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.getCredential(
+          idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+
+      final FirebaseUser user =
+          (await _auth.signInWithCredential(credential)).user;
+      print("signed in " + user.displayName);
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              title: Text("Error"),
+              content: Text(
+                "${e.message}",
+              ),
+              actions: <Widget>[
                 FlatButton(
                   child: Text("Ok"),
                   onPressed: () {

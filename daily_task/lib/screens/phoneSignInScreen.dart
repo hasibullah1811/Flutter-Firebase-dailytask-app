@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:daily_task/config/config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class _PhoneSignInScreenState extends State<PhoneSignInScreen> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _smsController = TextEditingController();
+  final Firestore _db = Firestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -173,13 +175,20 @@ class _PhoneSignInScreenState extends State<PhoneSignInScreen> {
     assert(user.uid == currentUser.uid);
     setState(() {
       if (user != null) {
+
+        //Storing user data into the firestore database
+        _db.collection("users").document(user.uid).setData({
+          "phoneNumber" : user.phoneNumber,
+          "lastSeen" : DateTime.now(),
+          "signin_method" : user.uid,
+        });
         _message = 'Successfully signed in, uid: ' + user.uid;
         print(_message);
       } else {
         _message = 'Sign in failed';
       }
     });
-
+    Navigator.pop(context);
   }
 
 }

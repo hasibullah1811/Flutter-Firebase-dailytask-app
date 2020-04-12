@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:daily_task/config/config.dart';
 import 'package:daily_task/screens/emailPassSignup.dart';
 import 'package:daily_task/screens/phoneSignInScreen.dart';
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Firestore _db = Firestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: <Widget>[
                   FlatButton.icon(
                     onPressed: () {
-                  _signInUsingGoogle();
+                      _signInUsingGoogle();
                     },
                     icon: Icon(
                       FontAwesomeIcons.google,
@@ -145,7 +147,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   FlatButton.icon(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneSignInScreen(),),);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PhoneSignInScreen(),
+                        ),
+                      );
                     },
                     icon: Icon(Icons.phone),
                     label: Text(
@@ -172,6 +179,15 @@ class _LoginScreenState extends State<LoginScreen> {
       await _auth
           .signInWithEmailAndPassword(email: email, password: password)
           .then((user) {
+        if (user != null) {
+          //Storing user data into the firestore database
+          _db.collection("users").document(user.user.uid).setData({
+            "phoneNumber": email,
+            "lastSeen": DateTime.now(),
+            "signin_method": user.user.uid,
+          });
+        }
+
         showDialog(
             context: context,
             builder: (ctx) {
@@ -265,6 +281,15 @@ class _LoginScreenState extends State<LoginScreen> {
       final FirebaseUser user =
           (await _auth.signInWithCredential(credential)).user;
       print("signed in " + user.displayName);
+
+      //Storing the user data in the firestore database
+      _db.collection("users").document(user.uid).setData({
+        "displayName": user.displayName,
+        "email": user.email,
+        "photUrl": user.photoUrl,
+        "lastSeen": DateTime.now(),
+        "signin_method": user.providerId,
+      });
     } catch (e) {
       showDialog(
           context: context,

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:daily_task/config/config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ class _EmailPassSignupScreenState extends State<EmailPassSignupScreen> {
   final TextEditingController _passController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Firestore _db = Firestore.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +88,7 @@ class _EmailPassSignupScreenState extends State<EmailPassSignupScreen> {
     );
   }
 
-  void _signup() async{
+  void _signup() async {
     String email = _emailController.text.toString().trim();
     String password = _passController.text;
 
@@ -96,6 +99,15 @@ class _EmailPassSignupScreenState extends State<EmailPassSignupScreen> {
         password: password,
       )
           .then((user) {
+        if (user.user != null) {
+          //Storing data in Firestore Database
+          _db.collection("users").document(user.user.uid).setData({
+            "email": email,
+            "lastseen": DateTime.now(),
+            "signin_method": user.user.providerId,
+          });
+        }
+
         showDialog(
             context: context,
             builder: (ctx) {
